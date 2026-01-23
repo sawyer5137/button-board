@@ -11,14 +11,16 @@ import { useState, useEffect } from "react";
 
 const { width, height } = Dimensions.get("window");
 const buttonSize = width * 0.15;
-const ip = "http://10.50.37.179:1234";
+const IP = "http://192.168.1.50:1234";
 
 export default function App() {
   const [buttonArr, setButtonArr] = useState([]);
 
+  console.log(`Using IP: ${IP}`);
+
   // request button config to set up buttons
   useEffect(() => {
-    fetch(ip + "/buttonConfig")
+    fetch(IP + "/buttonConfig")
       .then((resp) => {
         console.log("button config called");
         return resp.json();
@@ -29,7 +31,7 @@ export default function App() {
 
   // sends request to server with button number
   const accessRoute = async (id) => {
-    fetch(ip, {
+    fetch(IP, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -63,7 +65,7 @@ export default function App() {
               <Text style={styles.buttonText}>{item.text}</Text>
               {item.image && (
                 <Image
-                  source={{ uri: `${ip}/images/${item.image}` }}
+                  source={{ uri: `${IP}/images/${item.image}` }}
                   style={styles.buttonImage}
                 ></Image>
               )}
@@ -96,6 +98,8 @@ const styles = StyleSheet.create({
     padding: 3,
     borderRadius: 10,
     borderWidth: 2,
+    backgroundColor: "white",
+    elevation: 10,
   },
   buttonText: {
     color: "white",

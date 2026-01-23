@@ -8,6 +8,8 @@ import {
 import configFile from "./configButtons.json" assert { type: "json" };
 import fs from "fs";
 import path from "path";
+import { getIP } from "./src/utils.js";
+
 const __dirname = import.meta.dirname;
 const app = express();
 
@@ -37,6 +39,16 @@ app.get("/buttonConfig", (req, res) => {
 
 app.use("/images", express.static(path.join(__dirname, "/images")));
 
-const server = app.listen(PORT, () => {
-  console.log("Listening on port", PORT);
+app.listen(PORT, () => {
+  console.log(`Listening on port: ${PORT}`);
+
+  const ips = getIP();
+  if (ips.length === 0) {
+    console.log("No LAN IPv4 address found.");
+  } else {
+    console.log("LAN addresses (use one of these in the app):");
+    for (const ip of ips) {
+      console.log(`- ${ip.name}: http://${ip.address}:${PORT}`);
+    }
+  }
 });

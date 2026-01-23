@@ -1,4 +1,5 @@
 import { exec } from "child_process";
+import os from "os";
 
 export function getProcessId(processName) {
   return new Promise((resolve, reject) => {
@@ -49,4 +50,18 @@ export function killProcessById(pid) {
       }
     }
   });
+}
+
+export function getIP() {
+  const nets = os.networkInterfaces();
+  const ips = [];
+
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name] || []) {
+      if (net.family === "IPv4" && !net.internal) {
+        ips.push({ name, address: net.address });
+      }
+    }
+  }
+  return ips;
 }
