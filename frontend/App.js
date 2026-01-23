@@ -3,7 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
-  TouchableOpacity,
+  Pressable,
   Dimensions,
   Image,
 } from "react-native";
@@ -56,21 +56,34 @@ export default function App() {
     <View style={styles.container}>
       <View style={styles.grid}>
         {buttonArr.map((item, index) => (
-          <TouchableOpacity
+          <Pressable
             key={index}
-            style={[styles.button, { backgroundColor: item.color }]}
             onPress={() => accessRoute(index)}
+            style={({ pressed }) => [
+              styles.buttonBase,
+              pressed && styles.buttonBasePressed,
+            ]}
           >
-            <>
-              <Text style={styles.buttonText}>{item.text}</Text>
-              {item.image && (
-                <Image
-                  source={{ uri: `${IP}/images/${item.image}` }}
-                  style={styles.buttonImage}
-                ></Image>
-              )}
-            </>
-          </TouchableOpacity>
+            {({ pressed }) => (
+              <View
+                style={[
+                  styles.buttonFace,
+                  pressed && styles.buttonFacePressed,
+                  { backgroundColor: item.color },
+                ]}
+              >
+                {/* Renders image if present otherwise renders just text */}
+                {item.image ? (
+                  <Image
+                    source={{ uri: `${IP}/images/${item.image}` }}
+                    style={styles.buttonImage}
+                  />
+                ) : (
+                  <Text style={styles.buttonText}>{item.text}</Text>
+                )}
+              </View>
+            )}
+          </Pressable>
         ))}
       </View>
     </View>
@@ -82,31 +95,47 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "lightgray",
+    backgroundColor: "white",
   },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-around",
   },
-  button: {
+
+  buttonBase: {
     width: buttonSize,
     height: buttonSize,
-    justifyContent: "center",
-    alignItems: "center",
     margin: 10,
-    padding: 3,
-    borderRadius: 10,
-    borderWidth: 2,
-    backgroundColor: "white",
-    elevation: 10,
+    borderRadius: 14,
+    backgroundColor: "#222", // darker base = shadow body
   },
+
+  buttonFace: {
+    flex: 1,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 10,
+
+    // lift the face up
+    transform: [{ translateY: -6 }],
+  },
+
+  buttonFacePressed: {
+    // sink the button
+    transform: [{ translateY: 0 }],
+    elevation: 1,
+    shadowOpacity: 0.15,
+  },
+
   buttonText: {
     color: "white",
     fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
   },
+
   buttonImage: {
     position: "absolute",
     borderRadius: 10,
