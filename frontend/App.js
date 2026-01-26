@@ -8,10 +8,11 @@ import {
 } from "react-native";
 import { useState, useEffect } from "react";
 import { LinearGradient } from "expo-linear-gradient";
+import ButtonTile from "./components/ButtonTile";
 
 const { width, height } = Dimensions.get("window");
 const buttonSize = width * 0.15;
-const IP = "http://192.168.1.50:1234";
+const IP = "http://10.0.0.26:1234";
 
 export default function App() {
   const [buttonArr, setButtonArr] = useState([]);
@@ -78,58 +79,24 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.grid}>
+        {stack.length > 0 && (
+          <ButtonTile
+            onPress={goBack}
+            size={buttonSize}
+            button={{ color: "#888", text: "Back" }}
+          >
+            <Text style={styles.buttonText}>Back</Text>
+          </ButtonTile>
+        )}
         {/* Button array */}
         {buttonArr.map((button, index) => (
-          <Pressable
+          <ButtonTile
             key={index}
+            button={button}
+            size={buttonSize}
+            imageBaseUrl={IP + "/images/" + button.image}
             onPress={() => handlePress(button, index)}
-            style={({ pressed }) => [
-              styles.buttonBase,
-              pressed && styles.buttonBasePressed,
-            ]}
-          >
-            {({ pressed }) => (
-              <View
-                style={[
-                  styles.buttonFace,
-                  pressed && styles.buttonFacePressed,
-                  { backgroundColor: button.color },
-                ]}
-              >
-                {/* Face  highlight*/}
-                {!pressed && (
-                  <LinearGradient
-                    colors={[
-                      "rgba(255,255,255,0.45)",
-                      "rgba(255,255,255,0.15)",
-                      "rgba(255,255,255,0)",
-                    ]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0, y: 1 }}
-                    style={styles.highlight}
-                  />
-                )}
-
-                {/* Face shadow */}
-                <LinearGradient
-                  colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.15)"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                  style={styles.shadowFade}
-                />
-
-                {/* Content */}
-                {button.image ? (
-                  <Image
-                    source={{ uri: `${IP}/images/${button.image}` }}
-                    style={styles.buttonImage}
-                  />
-                ) : (
-                  <Text style={styles.buttonText}>{button.text}</Text>
-                )}
-              </View>
-            )}
-          </Pressable>
+          />
         ))}
       </View>
       <Pressable style={styles.refreshButton} onPress={fetchButtons}>

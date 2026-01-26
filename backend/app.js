@@ -5,12 +5,15 @@ import {
   pasteText,
   toggleSteamGame,
 } from "./src/actions.js";
-import configFile from "./configButtons.json" assert { type: "json" };
+import { readFile } from "node:fs/promises";
 import fs from "fs";
 import path from "path";
 import { getIP } from "./src/utils.js";
 import cors from "cors";
 
+const configFile = JSON.parse(
+  await readFile(new URL("./configButtons.json", import.meta.url), "utf8"),
+);
 const __dirname = import.meta.dirname;
 const app = express();
 
