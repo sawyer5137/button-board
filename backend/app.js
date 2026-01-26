@@ -9,10 +9,12 @@ import configFile from "./configButtons.json" assert { type: "json" };
 import fs from "fs";
 import path from "path";
 import { getIP } from "./src/utils.js";
+import cors from "cors";
 
 const __dirname = import.meta.dirname;
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

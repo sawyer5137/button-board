@@ -1,4 +1,3 @@
-import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
   Text,
@@ -8,6 +7,7 @@ import {
   Image,
 } from "react-native";
 import { useState, useEffect } from "react";
+import { LinearGradient } from "expo-linear-gradient";
 
 const { width, height } = Dimensions.get("window");
 const buttonSize = width * 0.15;
@@ -55,6 +55,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.grid}>
+        {/* Button array */}
         {buttonArr.map((item, index) => (
           <Pressable
             key={index}
@@ -72,7 +73,29 @@ export default function App() {
                   { backgroundColor: item.color },
                 ]}
               >
-                {/* Renders image if present otherwise renders just text */}
+                {/* Face  highlight*/}
+                {!pressed && (
+                  <LinearGradient
+                    colors={[
+                      "rgba(255,255,255,0.45)",
+                      "rgba(255,255,255,0.15)",
+                      "rgba(255,255,255,0)",
+                    ]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                    style={styles.highlight}
+                  />
+                )}
+
+                {/* Face shadow */}
+                <LinearGradient
+                  colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.15)"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={styles.shadowFade}
+                />
+
+                {/* Content */}
                 {item.image ? (
                   <Image
                     source={{ uri: `${IP}/images/${item.image}` }}
@@ -108,7 +131,7 @@ const styles = StyleSheet.create({
     height: buttonSize,
     margin: 10,
     borderRadius: 14,
-    backgroundColor: "#222", // darker base = shadow body
+    backgroundColor: "#666", // darker base = shadow body
   },
 
   buttonFace: {
@@ -117,6 +140,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     elevation: 10,
+    backgroundImage: "linear-gradient(to bottom, #000, #888)",
 
     // lift the face up
     transform: [{ translateY: -6 }],
@@ -141,5 +165,26 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: buttonSize,
     height: buttonSize,
+  },
+
+  // button highlight
+  highlight: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "55%",
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
+  },
+
+  shadowFade: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "40%",
+    borderBottomLeftRadius: 14,
+    borderBottomRightRadius: 14,
   },
 });
