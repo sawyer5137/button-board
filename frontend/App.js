@@ -15,11 +15,11 @@ const IP = "http://192.168.1.50:1234";
 
 export default function App() {
   const [buttonArr, setButtonArr] = useState([]);
+  const [stack, setStack] = useState([]);
 
   console.log(`Using IP: ${IP}`);
 
-  // request button config to set up buttons
-  useEffect(() => {
+  const fetchButtons = () => {
     fetch(IP + "/buttonConfig")
       .then((resp) => {
         console.log("button config called");
@@ -27,7 +27,7 @@ export default function App() {
       })
       .then((data) => setButtonArr(data))
       .catch((err) => console.log(err));
-  }, []);
+  };
 
   // sends request to server with button number
   const accessRoute = async (id) => {
@@ -52,14 +52,37 @@ export default function App() {
       });
   };
 
+  const handlePress = (button, index) => {
+    if (!button.action) {
+      setStack((s) => [...s, buttonArr]);
+      setButtonArr(button.buttons || []);
+    } else {
+      accessRoute(index);
+    }
+  };
+
+  const goBack = () => {
+    setStack((s) => {
+      if (s.length === 0) return s;
+      const prev = s[s.length - 1];
+      setButtonArr(prev);
+      return s.slice(0, -1);
+    });
+  };
+
+  //fetches buttonConfig json file on app load
+  useEffect(() => {
+    fetchButtons();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.grid}>
         {/* Button array */}
-        {buttonArr.map((item, index) => (
+        {buttonArr.map((button, index) => (
           <Pressable
             key={index}
-            onPress={() => accessRoute(index)}
+            onPress={() => handlePress(button, index)}
             style={({ pressed }) => [
               styles.buttonBase,
               pressed && styles.buttonBasePressed,
@@ -70,7 +93,7 @@ export default function App() {
                 style={[
                   styles.buttonFace,
                   pressed && styles.buttonFacePressed,
-                  { backgroundColor: item.color },
+                  { backgroundColor: button.color },
                 ]}
               >
                 {/* Face  highlight*/}
@@ -96,19 +119,22 @@ export default function App() {
                 />
 
                 {/* Content */}
-                {item.image ? (
+                {button.image ? (
                   <Image
-                    source={{ uri: `${IP}/images/${item.image}` }}
+                    source={{ uri: `${IP}/images/${button.image}` }}
                     style={styles.buttonImage}
                   />
                 ) : (
-                  <Text style={styles.buttonText}>{item.text}</Text>
+                  <Text style={styles.buttonText}>{button.text}</Text>
                 )}
               </View>
             )}
           </Pressable>
         ))}
       </View>
+      <Pressable style={styles.refreshButton} onPress={fetchButtons}>
+        <Text style={styles.refreshText}>Refresh</Text>
+      </Pressable>
     </View>
   );
 }
@@ -186,5 +212,29 @@ const styles = StyleSheet.create({
     height: "40%",
     borderBottomLeftRadius: 14,
     borderBottomRightRadius: 14,
+  },
+
+  //Refresh button
+  refreshButton: {
+    position: "absolute",
+    bottom: 25,
+    right: 25,
+
+    height: 44,
+    paddingHorizontal: 16,
+
+    borderRadius: 10,
+    backgroundColor: "#eee",
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    elevation: 4,
+  },
+
+  refreshText: {
+    fontSize: 16,
+    fontWeight: "16",
+    color: "#333",
   },
 });

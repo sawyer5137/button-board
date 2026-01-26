@@ -24,7 +24,18 @@ const PORT = 1234;
 
 app.post("/", (req, res) => {
   const buttonObj = buttons[req.body.buttonId];
+  if (!buttonObj) {
+    console.log("Bad button ID:", buttonObj);
+  }
+
   const action = buttonObj.action;
+  if (!action || !action.type) {
+    console.log("Button has no action:", buttonObj);
+    return res
+      .status(400)
+      .json({ error: "Button has no action", buttonId: buttonObj });
+  }
+
   console.log(buttonObj);
 
   if (action.type == "launch") toggleProgram(action.program);
@@ -32,7 +43,7 @@ app.post("/", (req, res) => {
   if (action.type == "url") openURL(action.url, action.program);
   if (action.type == "paste") pasteText(action.text);
 
-  res.json({});
+  res.json({ ok: true });
 });
 
 app.get("/buttonConfig", (req, res) => {
