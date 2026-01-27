@@ -4,45 +4,88 @@ import { readFile } from "node:fs/promises";
 import path from "path";
 import { getIP, indexButtons } from "./src/utils.js";
 import cors from "cors";
+import fs from "fs";
+import { fileURLToPath } from "url";
 
-const configFile = JSON.parse(
-  await readFile(new URL("./configButtons.json", import.meta.url), "utf8"),
-);
-const __dirname = import.meta.dirname;
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-let actionByIdMap = new Map();
-
 const PORT = 1234;
 
-//Runs action when request is received based on button id
+// ----- paths -----
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const CONFIG_PATH = path.join(__dirname, "configButtons.json");
+
+// ------ server side cached state -----
+let currentVersion = 0;
+let cachedButtons = [];
+let actionByIdMap = new Map();
+
+// ----- load + index config into cache -----
+function loadAndIndexConfig() {
+  const stat = fs.statSync(CONFIG_PATH);
+  const version = stat.mtimeMs;
+
+  const raw = fs.readFileSync(CONFIG_PATH, "utf8");
+  const parsed = JSON.parse(raw);
+
+  const indexedConfig = indexButtons(parsed);
+  currentVersion = version;
+  cachedButtons = indexedConfig.indexedButtons;
+  actionByIdMap = indexedConfig.actionById;
+
+  console.log(
+    `[config] loaded version=${currentVersion} buttons=${cachedButtons.length} actions=${actionByIdMap.size}`,
+  );
+}
+
+// ----- watch file and reload cache on change -----
+// fs.watch can fire multiple events; debounce prevents double reloads.
+let reloadTimer = null;
+fs.watch(CONFIG_PATH, { persistent: true }, (eventType) => {
+  if (eventType !== "change" && eventType !== "rename") return;
+
+  clearTimeout(reloadTimer);
+  reloadTimer = setTimeout(() => {
+    try {
+      loadAndIndexConfig();
+    } catch (err) {
+      console.error("[config] reload failed:", err);
+    }
+  }, 100);
+});
+
+//initial load
+loadAndIndexConfig();
+
+//run action if client version matches
 app.post("/", (req, res) => {
   const id = Number(req.body.buttonId);
+  const clientVersion = Number(req.body.version);
+
+  if (clientVersion !== currentVersion) {
+    return res.status(409).json({
+      error: "Old config",
+      serverVersion: currentVersion,
+    });
+  }
+
   const action = actionByIdMap.get(id);
-
-  console.log(actionByIdMap);
-
-  if (!action)
-    return res.status(404).json({ error: "No action for that buttonId" });
-
   runAction(action);
 
   res.json({ ok: true });
 });
 
-//Endpoint for app to get config file
+//client fetches config file + version
 app.get("/buttonConfig", (req, res) => {
-  const indexedConfig = indexButtons(configFile);
-
-  console.log(indexedConfig);
-
-  actionByIdMap = indexedConfig.actionById;
-
-  res.json(indexedConfig.indexedButtons);
+  res.json({
+    version: currentVersion,
+    buttons: cachedButtons,
+  });
 });
 
 //Endpoint for app to get images
