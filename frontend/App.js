@@ -7,7 +7,6 @@ import {
   Image,
 } from "react-native";
 import { useState, useEffect } from "react";
-import { LinearGradient } from "expo-linear-gradient";
 import ButtonTile from "./components/ButtonTile";
 
 const { width, height } = Dimensions.get("window");
@@ -18,6 +17,7 @@ console.log(`Using IP: ${IP}`);
 export default function App() {
   const [buttonArr, setButtonArr] = useState([]);
   const [stack, setStack] = useState([]);
+  const [configVersion, setConfigVersion] = useState(null);
 
   const fetchButtons = () => {
     fetch(IP + "/buttonConfig")
@@ -25,31 +25,31 @@ export default function App() {
         console.log("button config called");
         return resp.json();
       })
-      .then((data) => setButtonArr(data))
+      .then((data) => {
+        setButtonArr(data.buttons);
+        setConfigVersion(data.version);
+        setStack([]);
+      })
       .catch((err) => console.log(err));
   };
 
   // sends request to server with button number
-  const accessRoute = async (id) => {
+  const accessRoute = (buttonId) => {
     fetch(IP, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ buttonId: id }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ buttonId, version: configVersion }),
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Error retrieving buttons");
+      .then(async (response) => {
+        if (response.status === 409) {
+          // stale config: refresh immediately so UI + server mapping match again
+          await fetchButtons();
+          return;
         }
+        if (!response.ok) throw new Error("Error running action");
         return response.json();
       })
-      .then(() => {
-        console.log(`Button ${id} pressed`);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => console.log(err));
   };
 
   const handlePress = (button) => {
@@ -93,7 +93,7 @@ export default function App() {
             key={index}
             button={button}
             size={buttonSize}
-            imageBaseUrl={IP + "/images/" + button.image}
+            imageBaseUrl={IP + "/images"}
             onPress={() => handlePress(button, index)}
           />
         ))}
