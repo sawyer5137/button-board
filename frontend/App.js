@@ -12,13 +12,12 @@ import ButtonTile from "./components/ButtonTile";
 
 const { width, height } = Dimensions.get("window");
 const buttonSize = width * 0.15;
-const IP = "http://10.0.0.26:1234";
+const IP = "http://192.168.1.50:1234";
+console.log(`Using IP: ${IP}`);
 
 export default function App() {
   const [buttonArr, setButtonArr] = useState([]);
   const [stack, setStack] = useState([]);
-
-  console.log(`Using IP: ${IP}`);
 
   const fetchButtons = () => {
     fetch(IP + "/buttonConfig")
@@ -53,12 +52,12 @@ export default function App() {
       });
   };
 
-  const handlePress = (button, index) => {
+  const handlePress = (button) => {
     if (!button.action) {
       setStack((s) => [...s, buttonArr]);
       setButtonArr(button.buttons || []);
     } else {
-      accessRoute(index);
+      accessRoute(button.id);
     }
   };
 

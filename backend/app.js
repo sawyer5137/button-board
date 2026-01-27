@@ -1,14 +1,8 @@
 import express from "express";
-import {
-  toggleProgram,
-  openURL,
-  pasteText,
-  toggleSteamGame,
-} from "./src/actions.js";
+import { runAction } from "./src/actions.js";
 import { readFile } from "node:fs/promises";
-import fs from "fs";
 import path from "path";
-import { getIP } from "./src/utils.js";
+import { getIP, indexButtons } from "./src/utils.js";
 import cors from "cors";
 
 const configFile = JSON.parse(
@@ -21,38 +15,37 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const buttons = JSON.parse(fs.readFileSync("configButtons.json", "utf8"));
+let actionByIdMap = new Map();
 
 const PORT = 1234;
 
+//Runs action when request is received based on button id
 app.post("/", (req, res) => {
-  const buttonObj = buttons[req.body.buttonId];
-  if (!buttonObj) {
-    console.log("Bad button ID:", buttonObj);
-  }
+  const id = Number(req.body.buttonId);
+  const action = actionByIdMap.get(id);
 
-  const action = buttonObj.action;
-  if (!action || !action.type) {
-    console.log("Button has no action:", buttonObj);
-    return res
-      .status(400)
-      .json({ error: "Button has no action", buttonId: buttonObj });
-  }
+  console.log(actionByIdMap);
 
-  console.log(buttonObj);
+  if (!action)
+    return res.status(404).json({ error: "No action for that buttonId" });
 
-  if (action.type == "launch") toggleProgram(action.program);
-  if (action.type == "steam") toggleSteamGame(action.game, action.gameId);
-  if (action.type == "url") openURL(action.url, action.program);
-  if (action.type == "paste") pasteText(action.text);
+  runAction(action);
 
   res.json({ ok: true });
 });
 
+//Endpoint for app to get config file
 app.get("/buttonConfig", (req, res) => {
-  res.json(configFile);
+  const indexedConfig = indexButtons(configFile);
+
+  console.log(indexedConfig);
+
+  actionByIdMap = indexedConfig.actionById;
+
+  res.json(indexedConfig.indexedButtons);
 });
 
+//Endpoint for app to get images
 app.use("/images", express.static(path.join(__dirname, "/images")));
 
 app.listen(PORT, () => {

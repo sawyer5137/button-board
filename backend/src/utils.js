@@ -65,3 +65,31 @@ export function getIP() {
   }
   return ips;
 }
+
+export function indexButtons(rootButtonArr) {
+  let nextId = 0;
+  const actionById = new Map();
+
+  function walk(buttons) {
+    if (!Array.isArray(buttons)) return [];
+
+    return buttons.map((btn) => {
+      const id = nextId++;
+
+      const out = { ...btn, id };
+
+      if (btn.action) {
+        actionById.set(id, btn.action);
+      }
+
+      if (Array.isArray(btn.buttons)) {
+        out.buttons = walk(btn.buttons);
+      }
+
+      return out;
+    });
+  }
+
+  const indexedButtons = walk(rootButtonArr);
+  return { indexedButtons, actionById };
+}

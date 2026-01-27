@@ -45,6 +45,22 @@
         "text": "Spotify",
         "color": "#1db954",
         "action": { "type": "url", "url": "https://open.spotify.com" }
+      },
+      {
+        "color": "purple",
+        "text": "More Buttons",
+        "buttons": [
+          {
+            "text": "YouTube",
+            "color": "#ff0000",
+            "action": { "type": "url", "url": "https://youtube.com" }
+          },
+          {
+            "text": "Spotify",
+            "color": "#1db954",
+            "action": { "type": "url", "url": "https://open.spotify.com" }
+          }
+        ]
       }
     ]
   }

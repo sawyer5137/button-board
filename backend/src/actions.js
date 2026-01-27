@@ -4,7 +4,7 @@ import keySender from "node-key-sender";
 import clippy from "clipboardy";
 
 // opens and closes a specified program
-export async function toggleProgram(program) {
+async function toggleProgram(program) {
   const pid = await getProcessId(`${program}.exe`);
   if (pid) {
     killProcessById(Number(pid));
@@ -14,7 +14,7 @@ export async function toggleProgram(program) {
 }
 
 //opens and closes a steam game
-export async function toggleSteamGame(gameName, gameId) {
+async function toggleSteamGame(gameName, gameId) {
   const pid = await getProcessId(`${gameName}.exe`);
   if (pid) {
     killProcessById(Number(pid));
@@ -24,11 +24,18 @@ export async function toggleSteamGame(gameName, gameId) {
 }
 
 //writes to clipboard then pastes text. effectively types some text
-export function pasteText(text) {
+function pasteText(text) {
   clippy.write(text);
   keySender.sendCombination(["control", "v"]);
 }
 
-export function openURL(url, program) {
+function openURL(url, program) {
   open(url, { app: program });
+}
+
+export function runAction(action) {
+  if (action.type == "launch") toggleProgram(action.program);
+  if (action.type == "steam") toggleSteamGame(action.game, action.gameId);
+  if (action.type == "url") openURL(action.url, action.program);
+  if (action.type == "paste") pasteText(action.text);
 }
