@@ -8,15 +8,17 @@ import {
 } from "react-native";
 import { useState, useEffect } from "react";
 import ButtonTile from "./components/ButtonTile";
+import { LinearGradient } from "expo-linear-gradient";
 
 const { width, height } = Dimensions.get("window");
 const buttonSize = width * 0.15;
-const IP = "http://192.168.1.50:1234";
+const IP = "http://10.0.0.26:1234";
 console.log(`Using IP: ${IP}`);
 
 export default function App() {
   const [buttonArr, setButtonArr] = useState([]);
   const [stack, setStack] = useState([]);
+  const [navStack, setNavStack] = useState([]);
   const [configVersion, setConfigVersion] = useState(null);
 
   const fetchButtons = () => {
@@ -42,7 +44,7 @@ export default function App() {
     })
       .then(async (response) => {
         if (response.status === 409) {
-          // stale config: refresh immediately so UI + server mapping match again
+          // stale config - refresh immediately so UI + server mapping match again
           await fetchButtons();
           return;
         }
@@ -55,6 +57,7 @@ export default function App() {
   const handlePress = (button) => {
     if (!button.action) {
       setStack((s) => [...s, buttonArr]);
+      setNavStack((s) => [...s, button.text]);
       setButtonArr(button.buttons || []);
     } else {
       accessRoute(button.id);
@@ -66,6 +69,7 @@ export default function App() {
       if (s.length === 0) return s;
       const prev = s[s.length - 1];
       setButtonArr(prev);
+      setNavStack((s) => s.slice(0, -1));
       return s.slice(0, -1);
     });
   };
@@ -76,32 +80,44 @@ export default function App() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.grid}>
-        {stack.length > 0 && (
-          <ButtonTile
-            onPress={goBack}
-            size={buttonSize}
-            button={{ color: "#888", text: "Back" }}
-          >
-            <Text style={styles.buttonText}>Back</Text>
-          </ButtonTile>
-        )}
-        {/* Button array */}
-        {buttonArr.map((button, index) => (
-          <ButtonTile
-            key={index}
-            button={button}
-            size={buttonSize}
-            imageBaseUrl={IP + "/images"}
-            onPress={() => handlePress(button, index)}
-          />
-        ))}
+    <LinearGradient colors={["#c7c5c5", "#929191"]} style={{ flex: 1 }}>
+      <Text
+        style={{
+          fontSize: 14,
+          fontWeight: "bold",
+          textAlign: "center",
+          marginTop: 50,
+        }}
+      >
+        {navStack.length === 0 ? "Home" : "Home > " + navStack.join(" > ")}
+      </Text>
+      <View style={styles.container}>
+        <View style={styles.grid}>
+          {stack.length > 0 && (
+            <ButtonTile
+              onPress={goBack}
+              size={buttonSize}
+              button={{ color: "#888", text: "Back" }}
+            >
+              <Text style={styles.buttonText}>Back</Text>
+            </ButtonTile>
+          )}
+          {/* Button array */}
+          {buttonArr.map((button, index) => (
+            <ButtonTile
+              key={index}
+              button={button}
+              size={buttonSize}
+              imageBaseUrl={IP + "/images"}
+              onPress={() => handlePress(button, index)}
+            />
+          ))}
+        </View>
+        <Pressable style={styles.refreshButton} onPress={fetchButtons}>
+          <Text style={styles.refreshText}>Refresh</Text>
+        </Pressable>
       </View>
-      <Pressable style={styles.refreshButton} onPress={fetchButtons}>
-        <Text style={styles.refreshText}>Refresh</Text>
-      </Pressable>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -110,7 +126,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "white",
   },
   grid: {
     flexDirection: "row",
@@ -118,66 +133,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
   },
 
-  buttonBase: {
-    width: buttonSize,
-    height: buttonSize,
-    margin: 10,
-    borderRadius: 14,
-    backgroundColor: "#666", // darker base = shadow body
-  },
-
-  buttonFace: {
-    flex: 1,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 10,
-    backgroundImage: "linear-gradient(to bottom, #000, #888)",
-
-    // lift the face up
-    transform: [{ translateY: -6 }],
-  },
-
   buttonFacePressed: {
     // sink the button
     transform: [{ translateY: 0 }],
     elevation: 1,
     shadowOpacity: 0.15,
-  },
-
-  buttonText: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-
-  buttonImage: {
-    position: "absolute",
-    borderRadius: 10,
-    width: buttonSize,
-    height: buttonSize,
-  },
-
-  // button highlight
-  highlight: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: "55%",
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
-  },
-
-  shadowFade: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: "40%",
-    borderBottomLeftRadius: 14,
-    borderBottomRightRadius: 14,
   },
 
   //Refresh button

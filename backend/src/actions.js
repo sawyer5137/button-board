@@ -37,5 +37,5 @@ export function runAction(action) {
   if (action.type == "launch") toggleProgram(action.program);
   if (action.type == "steam") toggleSteamGame(action.game, action.gameId);
   if (action.type == "url") openURL(action.url, action.program);
-  if (action.type == "paste") pasteText(action.text);
+  if (action.type == "type") pasteText(action.text);
 }

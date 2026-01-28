@@ -62,7 +62,14 @@ export default function ButtonTile({ button, size, imageBaseUrl, onPress }) {
               ]}
             />
           ) : (
-            <Text style={styles.buttonText}>{button.text}</Text>
+            <Text
+              style={[styles.buttonText, { fontSize: 20 }]}
+              numberOfLines={10}
+              adjustsFontSizeToFit={true}
+              minimumFontScale={0.5}
+            >
+              {button.text}
+            </Text>
           )}
 
           {isFolder && (
@@ -70,7 +77,6 @@ export default function ButtonTile({ button, size, imageBaseUrl, onPress }) {
               <Text style={styles.buttonText}>📁</Text>
             </View>
           )}
-
         </View>
       )}
     </Pressable>
@@ -82,8 +88,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#666",
   },
 
-  buttonBasePressed: {},
-
   buttonFace: {
     flex: 1,
     alignItems: "center",
@@ -91,6 +95,8 @@ const styles = StyleSheet.create({
     elevation: 10,
     transform: [{ translateY: -6 }],
     overflow: "hidden",
+    borderWidth: 2,
+    borderColor: "#666",
   },
 
   buttonFacePressed: {
@@ -101,7 +107,7 @@ const styles = StyleSheet.create({
 
   buttonText: {
     color: "white",
-    fontSize: 20,
+    // fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
   },

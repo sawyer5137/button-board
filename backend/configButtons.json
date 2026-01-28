@@ -29,8 +29,17 @@
   },
   {
     "color": "orange",
-    "text": "This button does nothing. Don't press it!",
+    "text": "This is some really long text that should be truncated. Now it's even longer to test the limits. Oh boy, its getting really long indeed! Now its time to see how long this text can actually be before it breaks something. I guess it can be even longer! Let's keep going and see what happens when we reach the maximum length allowed in this button configuration file.",
     "action": {}
+  },
+  {
+    "color": "darkgray",
+    "text": "",
+    "image": "hotdogman.png",
+    "action": {
+      "type": "type",
+      "text": "🌭"
+    }
   },
   {
     "color": "olive",
