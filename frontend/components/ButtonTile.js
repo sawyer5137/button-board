@@ -1,9 +1,17 @@
 import React from "react";
 import { View, Text, Pressable, Image, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import AutoFitText from "./AutoFitText";
+import { useFonts } from "expo-font";
+import { Manrope_600SemiBold } from "@expo-google-fonts/manrope";
 
 export default function ButtonTile({ button, size, imageBaseUrl, onPress }) {
-  const isFolder = !button.action;
+  const isFolder = !button.action && button.buttons;
+  const [fontsLoaded] = useFonts({
+    Manrope_600SemiBold,
+  });
+
+  if (!fontsLoaded) return null;
 
   return (
     <Pressable
@@ -22,7 +30,7 @@ export default function ButtonTile({ button, size, imageBaseUrl, onPress }) {
             pressed && styles.buttonFacePressed,
           ]}
         >
-          {/* Highlight overlay */}
+          {/* ----- Highlight overlay ----- */}
           {!pressed && (
             <LinearGradient
               colors={[
@@ -40,7 +48,7 @@ export default function ButtonTile({ button, size, imageBaseUrl, onPress }) {
             />
           )}
 
-          {/* Bottom shadow fade */}
+          {/* ----- Bottom shadow fade ----- */}
           <LinearGradient
             colors={["rgba(0,0,0,0)", "rgba(0,0,0,0.15)"]}
             start={{ x: 0, y: 0 }}
@@ -52,7 +60,7 @@ export default function ButtonTile({ button, size, imageBaseUrl, onPress }) {
             pointerEvents="none"
           />
 
-          {/* Content */}
+          {/* ----- Content ----- */}
           {button.image ? (
             <Image
               source={{ uri: `${imageBaseUrl}/${button.image}` }}
@@ -62,19 +70,20 @@ export default function ButtonTile({ button, size, imageBaseUrl, onPress }) {
               ]}
             />
           ) : (
-            <Text
-              style={[styles.buttonText, { fontSize: 20 }]}
-              numberOfLines={10}
-              adjustsFontSizeToFit={true}
-              minimumFontScale={0.5}
+            <AutoFitText
+              text={button.text}
+              style={styles.buttonText}
+              maxFontSize={30}
+              minFontSize={14}
+              maxLines={6}
             >
               {button.text}
-            </Text>
+            </AutoFitText>
           )}
-
+          {/* ----- Folders ----- */}
           {isFolder && (
             <View style={{ position: "absolute", top: 10, left: 10 }}>
-              <Text style={styles.buttonText}>📁</Text>
+              <Text style={{ fontSize: 30 }}>📁</Text>
             </View>
           )}
         </View>
@@ -106,10 +115,10 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "white",
-    // fontSize: 20,
-    fontWeight: "bold",
     textAlign: "center",
+    color: "white",
+    fontFamily: "Manrope_600SemiBold",
+    letterSpacing: 0.3,
   },
 
   buttonImage: {

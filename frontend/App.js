@@ -9,10 +9,11 @@ import {
 import { useState, useEffect } from "react";
 import ButtonTile from "./components/ButtonTile";
 import { LinearGradient } from "expo-linear-gradient";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width, height } = Dimensions.get("window");
 const buttonSize = width * 0.15;
-const IP = "http://10.0.0.26:1234";
+const IP = "http://192.168.1.50:1234";
 console.log(`Using IP: ${IP}`);
 
 export default function App() {
@@ -80,44 +81,46 @@ export default function App() {
   }, []);
 
   return (
-    <LinearGradient colors={["#c7c5c5", "#929191"]} style={{ flex: 1 }}>
-      <Text
-        style={{
-          fontSize: 14,
-          fontWeight: "bold",
-          textAlign: "center",
-          marginTop: 50,
-        }}
-      >
-        {navStack.length === 0 ? "Home" : "Home > " + navStack.join(" > ")}
-      </Text>
-      <View style={styles.container}>
-        <View style={styles.grid}>
-          {stack.length > 0 && (
-            <ButtonTile
-              onPress={goBack}
-              size={buttonSize}
-              button={{ color: "#888", text: "Back" }}
-            >
-              <Text style={styles.buttonText}>Back</Text>
-            </ButtonTile>
-          )}
-          {/* Button array */}
-          {buttonArr.map((button, index) => (
-            <ButtonTile
-              key={index}
-              button={button}
-              size={buttonSize}
-              imageBaseUrl={IP + "/images"}
-              onPress={() => handlePress(button, index)}
-            />
-          ))}
+    <SafeAreaView style={{ flex: 1 }}>
+      <LinearGradient colors={["#c7c5c5", "#929191"]} style={{ flex: 1 }}>
+        <Text
+          style={{
+            fontSize: 14,
+            fontWeight: "bold",
+            textAlign: "center",
+            marginTop: 50,
+          }}
+        >
+          {navStack.length === 0 ? "Home" : "Home > " + navStack.join(" > ")}
+        </Text>
+        <View style={styles.container}>
+          <View style={styles.grid}>
+            {stack.length > 0 && (
+              <ButtonTile
+                onPress={goBack}
+                size={buttonSize}
+                button={{ color: "#888", text: "Back" }}
+              >
+                <Text style={styles.buttonText}>Back</Text>
+              </ButtonTile>
+            )}
+            {/* Button array */}
+            {buttonArr.map((button, index) => (
+              <ButtonTile
+                key={index}
+                button={button}
+                size={buttonSize}
+                imageBaseUrl={IP + "/images"}
+                onPress={() => handlePress(button, index)}
+              />
+            ))}
+          </View>
+          <Pressable style={styles.refreshButton} onPress={fetchButtons}>
+            <Text style={styles.refreshText}>Refresh</Text>
+          </Pressable>
         </View>
-        <Pressable style={styles.refreshButton} onPress={fetchButtons}>
-          <Text style={styles.refreshText}>Refresh</Text>
-        </Pressable>
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+    </SafeAreaView>
   );
 }
 
@@ -131,13 +134,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-around",
-  },
-
-  buttonFacePressed: {
-    // sink the button
-    transform: [{ translateY: 0 }],
-    elevation: 1,
-    shadowOpacity: 0.15,
   },
 
   //Refresh button
@@ -160,7 +156,7 @@ const styles = StyleSheet.create({
 
   refreshText: {
     fontSize: 16,
-    fontWeight: "16",
+    fontWeight: "600",
     color: "#333",
   },
 });
